@@ -41,10 +41,10 @@ class IndibizController extends Controller
 
         $validatedData['id_pengguna'] = $request->user()->id_pengguna;
 
-        // 2. Simpan Data Indibiz
+
         $indibiz = IndibizData::create($validatedData);
 
-        // 3. Logika Otomatis: Catat ke Tabel Aktivitas
+
         Aktivitas::create([
             'nama_aktivitas' => 'Input data Baru',
             'tanggal_aktivitas' => now(), // Menggunakan helper Carbon
