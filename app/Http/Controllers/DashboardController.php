@@ -92,6 +92,39 @@ class DashboardController extends Controller
             'indibiz' => $monthlyIndibizArr,
         ];
 
+        // Fetch coordinates for maps pin
+        $mapLocations = [];
+        $surveysWithLoc = (clone $surveyQuery)->whereNotNull('latitude')->whereNotNull('longitude')->get();
+        foreach ($surveysWithLoc as $s) {
+            $subtitle = $s->kriteria;
+            if ($s->kecamatan) {
+                $subtitle .= ' · Kec. ' . $s->kecamatan;
+            }
+            if ($s->alamat_detail) {
+                $subtitle .= ' (' . $s->alamat_detail . ')';
+            }
+
+            $mapLocations[] = [
+                'type' => 'survey',
+                'title' => $s->nama_responden,
+                'subtitle' => $subtitle,
+                'status' => $s->hasil_survey,
+                'lat' => (double) $s->latitude,
+                'lng' => (double) $s->longitude,
+            ];
+        }
+        $indibizWithLoc = (clone $indibizQuery)->whereNotNull('latitude')->whereNotNull('longitude')->get();
+        foreach ($indibizWithLoc as $i) {
+            $mapLocations[] = [
+                'type' => 'indibiz',
+                'title' => $i->nama_perusahaan,
+                'subtitle' => $i->jenis_layanan,
+                'status' => $i->status_langganan,
+                'lat' => (double) $i->latitude,
+                'lng' => (double) $i->longitude,
+            ];
+        }
+
         return view('dashboard', [
             'user' => $user,
             'isAdmin' => $isAdmin,
@@ -106,6 +139,7 @@ class DashboardController extends Controller
             'achievementPercent' => $achievementPercent,
             'chartWeekly' => $chartWeekly,
             'chartMonthly' => $chartMonthly,
+            'mapLocations' => $mapLocations,
         ]);
     }
 }

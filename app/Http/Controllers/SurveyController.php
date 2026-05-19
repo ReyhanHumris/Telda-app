@@ -18,6 +18,17 @@ class SurveyController extends Controller
             $query->where('id_pengguna', $request->user()->id_pengguna);
         }
 
+        // Hitung Overview Stats berdasarkan status (aktif/tidak di-trash)
+        $statsQuery = SurveyData::query();
+        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
+            $statsQuery->where('id_pengguna', $request->user()->id_pengguna);
+        }
+
+        $totalSurvey = (clone $statsQuery)->count();
+        $berminatCount = (clone $statsQuery)->where('hasil_survey', 'berminat')->count();
+        $pikirCount = (clone $statsQuery)->where('hasil_survey', 'pikir-pikir')->count();
+        $tidakBerminatCount = (clone $statsQuery)->where('hasil_survey', 'tidak berminat')->count();
+
         if ($request->filled('bulan')) {
             $query->whereMonth('tanggal_input', $request->bulan);
         }
@@ -30,8 +41,14 @@ class SurveyController extends Controller
             $query->where('hasil_survey', $request->tipe);
         }
 
+        $limit = in_array($request->get('limit'), [5, 10, 20, 25]) ? (int) $request->get('limit') : 10;
+
         return view('survey.index', [
-            'items' => $query->paginate(10)->withQueryString(),
+            'items' => $query->paginate($limit)->withQueryString(),
+            'totalSurvey' => $totalSurvey,
+            'berminatCount' => $berminatCount,
+            'pikirCount' => $pikirCount,
+            'tidakBerminatCount' => $tidakBerminatCount,
         ]);
     }
 
@@ -48,9 +65,14 @@ class SurveyController extends Controller
             'no_telepon' => ['required', 'string', 'max:20'],
             'kriteria' => ['required', 'string', 'max:100'],
             'hasil_survey' => ['required', 'in:berminat,pikir-pikir,tidak berminat'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'kecamatan' => ['nullable', 'string', 'max:100'],
+            'alamat_detail' => ['nullable', 'string'],
         ]);
 
         $validatedData['id_pengguna'] = $request->user()->id_pengguna;
+        $validatedData['tanggal_input'] = now();
 
         // 1. Simpan data Survey
         $survey = SurveyData::create($validatedData);
@@ -141,5 +163,38 @@ class SurveyController extends Controller
         $survey->forceDelete();
 
         return redirect()->back()->with('status', 'Data survey dihapus permanen.');
+    }
+
+    public function print(Request $request)
+    {
+        $query = SurveyData::with('pengguna')->orderByDesc('id_survey');
+
+        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
+            $query->where('id_pengguna', $request->user()->id_pengguna);
+        }
+
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_input', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_input', $request->tahun);
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('hasil_survey', $request->tipe);
+        }
+
+        $items = $query->get();
+
+        $bulanNama = [
+            '01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni',
+            '07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
+        ];
+        $filterBulan = $request->filled('bulan') ? ($bulanNama[$request->bulan] ?? null) : null;
+        $filterTahun = $request->get('tahun');
+        $filterTipe = $request->get('tipe');
+
+        return view('survey.print', compact('items', 'filterBulan', 'filterTahun', 'filterTipe'));
     }
 }

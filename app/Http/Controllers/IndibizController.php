@@ -18,6 +18,16 @@ class IndibizController extends Controller
             $query->where('id_pengguna', $request->user()->id_pengguna);
         }
 
+        // Hitung Overview Stats berdasarkan status langganan (aktif/nonaktif)
+        $statsQuery = IndibizData::query();
+        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
+            $statsQuery->where('id_pengguna', $request->user()->id_pengguna);
+        }
+
+        $totalIndibiz = (clone $statsQuery)->count();
+        $aktifCount = (clone $statsQuery)->whereIn('status_langganan', ['aktif', 'Aktif'])->count();
+        $nonaktifCount = (clone $statsQuery)->whereIn('status_langganan', ['nonaktif', 'Nonaktif'])->count();
+
         if ($request->filled('bulan')) {
             $query->whereMonth('tanggal_input', $request->bulan);
         }
@@ -30,9 +40,14 @@ class IndibizController extends Controller
             $query->where('jenis_layanan', $request->tipe);
         }
 
+        $limit = in_array($request->get('limit'), [5, 10, 20, 25]) ? (int) $request->get('limit') : 10;
+
         // Gunakan paginate() untuk menggantikan get() agar navigasi halaman berfungsi
         return view('indibiz.index', [
-            'items' => $query->paginate(10)->withQueryString(), 
+            'items' => $query->paginate($limit)->withQueryString(),
+            'totalIndibiz' => $totalIndibiz,
+            'aktifCount' => $aktifCount,
+            'nonaktifCount' => $nonaktifCount,
         ]);
     }
 
@@ -49,10 +64,12 @@ class IndibizController extends Controller
             'alamat_perusahaan' => ['required', 'string'],
             'jenis_layanan' => ['required', 'string', 'max:50'],
             'status_langganan' => ['required', 'in:aktif,nonaktif'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
         ]);
 
         $validatedData['id_pengguna'] = $request->user()->id_pengguna;
-
+        $validatedData['tanggal_input'] = now();
 
         $indibiz = IndibizData::create($validatedData);
 
@@ -140,5 +157,38 @@ class IndibizController extends Controller
         $indibiz->forceDelete();
 
         return redirect()->back()->with('status', 'Data Indibiz dihapus permanen.');
+    }
+
+    public function print(Request $request)
+    {
+        $query = IndibizData::with('pengguna')->orderByDesc('id_indibiz');
+
+        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
+            $query->where('id_pengguna', $request->user()->id_pengguna);
+        }
+
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_input', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_input', $request->tahun);
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('jenis_layanan', $request->tipe);
+        }
+
+        $items = $query->get();
+
+        $bulanNama = [
+            '01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni',
+            '07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
+        ];
+        $filterBulan = $request->filled('bulan') ? ($bulanNama[$request->bulan] ?? null) : null;
+        $filterTahun = $request->get('tahun');
+        $filterTipe = $request->get('tipe');
+
+        return view('indibiz.print', compact('items', 'filterBulan', 'filterTahun', 'filterTipe'));
     }
 }

@@ -15,11 +15,12 @@
                 <div class="flex items-center gap-6">
                     <div class="relative group">
                         @if ($user->foto)
-                            <img src="{{ $user->foto_url }}" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-surface-container shadow-md">
+                            <img id="avatar-preview" src="{{ $user->foto_url }}" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-surface-container shadow-md">
                         @else
-                            <div class="w-24 h-24 rounded-full bg-primary-container text-primary flex items-center justify-center text-3xl font-bold border-4 border-surface-container shadow-md">
+                            <div id="avatar-placeholder" class="w-24 h-24 rounded-full bg-primary-container text-primary flex items-center justify-center text-3xl font-bold border-4 border-surface-container shadow-md">
                                 {{ $user->inisial() }}
                             </div>
+                            <img id="avatar-preview" src="" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-surface-container shadow-md hidden">
                         @endif
                         <label for="foto" class="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
                             <span class="material-symbols-outlined">photo_camera</span>
@@ -30,6 +31,10 @@
                     <div>
                         <h3 class="text-lg font-bold text-on-surface">{{ $user->nama_lengkap }}</h3>
                         <p class="text-sm text-on-surface-variant">{{ $user->role }}</p>
+                        <label for="foto" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container-high hover:bg-surface-container text-on-surface text-xs font-bold rounded-lg cursor-pointer transition-all border border-outline-variant/30">
+                            <span class="material-symbols-outlined text-sm">upload</span>
+                            Pilih Foto Profil
+                        </label>
                     </div>
                 </div>
 
@@ -72,15 +77,29 @@
 <script>
     function previewImage(input) {
         if (input.files && input.files[0]) {
-            // Kita bisa tambahkan preview gambar lokal di sini jika mau
-            // Untuk saat ini biar sederhana, form disubmit manual atau cukup tahu file sudah dipilih.
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('avatar-preview');
+                const placeholder = document.getElementById('avatar-placeholder');
+                
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+
             Swal.fire({
                 toast: true,
                 position: 'top-end',
                 icon: 'info',
-                title: 'Foto siap diunggah, silakan klik Simpan Perubahan.',
+                title: 'Pratinjau foto diperbarui. Klik Simpan Perubahan untuk mengunggah.',
                 showConfirmButton: false,
-                timer: 3000
+                timer: 3500,
+                timerProgressBar: true
             });
         }
     }

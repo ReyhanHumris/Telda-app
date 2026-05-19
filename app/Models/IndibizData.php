@@ -20,6 +20,8 @@ class IndibizData extends Model
         'status_langganan',
         'id_pengguna',
         'tanggal_input',
+        'latitude',
+        'longitude',
     ];
 
     protected $casts = [

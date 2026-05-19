@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
 
+    Route::get('/indibiz/cetak', [IndibizController::class, 'print'])->name('indibiz.print');
     Route::get('/indibiz', [IndibizController::class, 'index'])->name('indibiz.index');
     Route::get('/indibiz/create', [IndibizController::class, 'create'])->name('indibiz.create');
     Route::post('/indibiz', [IndibizController::class, 'store'])->name('indibiz.store');
@@ -37,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/indibiz/{id}/restore', [IndibizController::class, 'restore'])->name('indibiz.restore');
     Route::delete('/indibiz/{id}/force', [IndibizController::class, 'forceDelete'])->name('indibiz.forceDelete');
 
+    Route::get('/survey/cetak', [SurveyController::class, 'print'])->name('survey.print');
     Route::get('/survey', [SurveyController::class, 'index'])->name('survey.index');
     Route::get('/survey/create', [SurveyController::class, 'create'])->name('survey.create');
     Route::post('/survey', [SurveyController::class, 'store'])->name('survey.store');
@@ -46,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/survey/{id}/force', [SurveyController::class, 'forceDelete'])->name('survey.forceDelete');
 
     Route::middleware('role:admin')->group(function () {
+        Route::get('/aktivitas/cetak', [AktivitasController::class, 'print'])->name('aktivitas.print');
         Route::get('/aktivitas', [AktivitasController::class, 'index'])->name('aktivitas.index');
         Route::get('/aktivitas/create', [AktivitasController::class, 'create'])->name('aktivitas.create');
         Route::post('/aktivitas', [AktivitasController::class, 'store'])->name('aktivitas.store');

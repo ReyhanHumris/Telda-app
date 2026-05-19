@@ -1,5 +1,11 @@
 @extends('layouts.admin')
 
+@push('head')
+    <style>
+        #map { z-index: 1; min-height: 288px; }
+    </style>
+@endpush
+
 @section('content')
     <div class="mb-8">
         <nav class="flex items-center gap-2 text-xs text-on-secondary-fixed-variant mb-2 uppercase tracking-widest font-semibold">
@@ -74,6 +80,28 @@
                         </label>
                     </div>
                 </div>
+
+                <!-- Map Location Selection Section -->
+                <div class="space-y-3 pt-4 border-t border-outline-variant/10">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest">Pilih Lokasi Perusahaan di Peta (Google Maps / OpenStreetMap)</label>
+                        <span class="text-[10px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase tracking-tight">Klik Peta untuk Pin</span>
+                    </div>
+                    <div id="map" class="h-72 rounded-2xl border border-outline-variant/20 shadow-inner"></div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Latitude</label>
+                            <input type="text" id="latitude" name="latitude" readonly value="{{ old('latitude') }}"
+                                class="w-full bg-slate-100 border border-outline-variant/20 focus:outline-none p-2.5 text-xs rounded-lg text-slate-500 font-mono">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Longitude</label>
+                            <input type="text" id="longitude" name="longitude" readonly value="{{ old('longitude') }}"
+                                class="w-full bg-slate-100 border border-outline-variant/20 focus:outline-none p-2.5 text-xs rounded-lg text-slate-500 font-mono">
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="p-6 bg-surface-container-low border-t border-outline-variant/10 flex gap-4 justify-end">
@@ -87,3 +115,69 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        window.initCreateMap = function() {
+            const defaultLat = -8.4908;
+            const defaultLng = 119.8824;
+            
+            const latitudeInput = document.getElementById('latitude');
+            const longitudeInput = document.getElementById('longitude');
+            
+            let initialLat = parseFloat(latitudeInput.value) || defaultLat;
+            let initialLng = parseFloat(longitudeInput.value) || defaultLng;
+
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: { lat: initialLat, lng: initialLng },
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true
+            });
+
+            let marker;
+
+            // If coordinates exist, create a marker
+            if (latitudeInput.value && longitudeInput.value) {
+                marker = new google.maps.Marker({
+                    position: { lat: initialLat, lng: initialLng },
+                    map: map,
+                    draggable: true
+                });
+                
+                marker.addListener('dragend', function() {
+                    const pos = marker.getPosition();
+                    latitudeInput.value = pos.lat().toFixed(8);
+                    longitudeInput.value = pos.lng().toFixed(8);
+                });
+            }
+
+            // Click event on map to place or move marker
+            map.addListener('click', function(e) {
+                const clickedLat = e.latLng.lat().toFixed(8);
+                const clickedLng = e.latLng.lng().toFixed(8);
+
+                latitudeInput.value = clickedLat;
+                longitudeInput.value = clickedLng;
+
+                if (marker) {
+                    marker.setPosition(e.latLng);
+                } else {
+                    marker = new google.maps.Marker({
+                        position: e.latLng,
+                        map: map,
+                        draggable: true
+                    });
+
+                    marker.addListener('dragend', function() {
+                        const pos = marker.getPosition();
+                        latitudeInput.value = pos.lat().toFixed(8);
+                        longitudeInput.value = pos.lng().toFixed(8);
+                    });
+                }
+            });
+        };
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY', '') }}&callback=initCreateMap" async defer></script>
+@endpush

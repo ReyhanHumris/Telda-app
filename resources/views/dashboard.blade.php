@@ -1,5 +1,11 @@
 @extends('layouts.admin')
 
+@push('head')
+    <style>
+        #dashboardMap { z-index: 1; min-height: 420px; }
+    </style>
+@endpush
+
 @php
     $greeting = match (true) {
         now()->hour < 11 => 'Selamat pagi',
@@ -150,19 +156,20 @@
     </div>
 
     {{-- Map --}}
-    <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm">
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm mb-6">
         <div class="p-5 border-b border-outline-variant/10 flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">distance</span>
-                <h4 class="font-bold font-headline">Peta Operasional Labuan Bajo</h4>
+                <h4 class="font-bold font-headline">Peta Sebaran Koordinat Labuan Bajo</h4>
             </div>
-            <button type="button" id="btnExpandMap" class="text-xs font-bold text-primary hover:underline flex items-center gap-1">
-                Perbesar Peta <span class="material-symbols-outlined text-sm">open_in_new</span>
-            </button>
+            <div class="flex items-center gap-4 text-xs font-semibold text-on-surface-variant">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Berminat / Aktif</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Pikir-pikir</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-400 inline-block"></span> Tidak Berminat / Nonaktif</span>
+            </div>
         </div>
-        <div class="h-[380px] w-full">
-            <iframe class="w-full h-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31548.8837330743!2d119.8665046!3d-8.494799!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2db46698650e6403%3A0x1030bfb510c4d40!2sLabuan%20Bajo!5e0!3m2!1sen!2sid"></iframe>
+        <div class="h-[420px] w-full">
+            <div id="dashboardMap" class="w-full h-full border-0"></div>
         </div>
     </div>
 
@@ -182,6 +189,7 @@
     const breakdownLabels = @json($breakdownLabels);
     const breakdownValues = @json($breakdownValues);
     const achievementPercent = {{ $achievementPercent }};
+    const mapLocations = @json($mapLocations);
 
     document.addEventListener('DOMContentLoaded', function () {
         // Counter animation
@@ -263,17 +271,82 @@
             }).render();
         }
 
-        // Expand map
-        document.getElementById('btnExpandMap')?.addEventListener('click', () => {
-            Swal.fire({
-                title: 'Labuan Bajo',
-                html: '<iframe class="w-full h-80 rounded-lg border-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31548.8837330743!2d119.8665046!3d-8.494799!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2db46698650e6403%3A0x1030bfb510c4d40!2sLabuan%20Bajo!5e0!3m2!1sen!2sid"></iframe>',
-                width: 800,
-                showConfirmButton: true,
-                confirmButtonText: 'Tutup',
-                confirmButtonColor: '#185eb0',
+        // Initialize Google Maps
+        window.initDashboardMap = function() {
+            const defaultLat = -8.4908;
+            const defaultLng = 119.8824;
+            const dashboardMap = new google.maps.Map(document.getElementById('dashboardMap'), {
+                zoom: 13,
+                center: { lat: defaultLat, lng: defaultLng },
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true
             });
-        });
+
+            const bounds = new google.maps.LatLngBounds();
+            let hasMarkers = false;
+
+            // Render markers for all coordinate locations
+            mapLocations.forEach(loc => {
+                let markerColor = '#94a3b8'; // grey
+                if (loc.status === 'berminat' || loc.status === 'aktif') {
+                    markerColor = '#10b981'; // emerald
+                } else if (loc.status === 'pikir-pikir') {
+                    markerColor = '#f59e0b'; // amber
+                } else if (loc.status === 'tidak berminat' || loc.status === 'nonaktif') {
+                    markerColor = '#ef4444'; // red
+                }
+
+                // Beautiful custom colored pointer pin using SVG paths
+                const markerIcon = {
+                    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                    fillColor: markerColor,
+                    fillOpacity: 1.0,
+                    strokeWeight: 2,
+                    strokeColor: '#FFFFFF',
+                    scale: 1.5,
+                    anchor: new google.maps.Point(12, 21),
+                };
+
+                const marker = new google.maps.Marker({
+                    position: { lat: loc.lat, lng: loc.lng },
+                    map: dashboardMap,
+                    title: loc.title,
+                    icon: markerIcon
+                });
+
+                const popupContent = `
+                    <div style="font-family: 'Inter', sans-serif; padding: 4px; width: 180px;">
+                        <span style="font-size: 9px; font-weight: bold; text-transform: uppercase; color: #fff; background-color: ${loc.type === 'survey' ? '#185eb0' : '#49636f'}; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 6px;">
+                            ${loc.type}
+                        </span>
+                        <h5 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #2b3437; line-height: 1.3;">${loc.title}</h5>
+                        <p style="margin: 0 0 8px 0; font-size: 11px; color: #586064;">${loc.subtitle}</p>
+                        <div style="border-top: 1px solid #eaeff1; padding-top: 6px; display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 9px; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Status</span>
+                            <span style="font-size: 10px; font-weight: bold; color: ${markerColor}; text-transform: capitalize;">${loc.status}</span>
+                        </div>
+                    </div>
+                `;
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: popupContent
+                });
+
+                marker.addListener('click', function() {
+                    infoWindow.open(dashboardMap, marker);
+                });
+
+                bounds.extend(marker.getPosition());
+                hasMarkers = true;
+            });
+
+            // Fit map bounds if markers are present
+            if (hasMarkers) {
+                dashboardMap.fitBounds(bounds);
+            }
+        };
     });
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY', '') }}&callback=initDashboardMap" async defer></script>
 @endpush

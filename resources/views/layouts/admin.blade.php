@@ -38,6 +38,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #2b3437; margin: 0; }
         .font-headline { font-family: 'Manrope', sans-serif; }
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     </style>
     @stack('head')
 </head>
@@ -46,46 +47,83 @@
 <!-- Overlay Mobile -->
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden transition-opacity opacity-0"></div>
 
-<aside id="sidebar" class="flex flex-col h-screen fixed left-0 top-0 z-40 bg-[#f1f4f6] w-64 border-r-0 font-body -translate-x-full md:translate-x-0 transition-transform duration-300">
-    <div class="px-6 py-8 flex justify-between items-center">
+<aside id="sidebar" class="flex flex-col h-screen fixed left-0 top-0 z-40 bg-[#f8fafc] w-64 border-r border-slate-100 font-body -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-sm">
+    <div class="px-6 py-7 flex justify-between items-center bg-gradient-to-br from-[#185eb0] to-[#0051a1] rounded-b-2xl shadow-md mb-6">
         <div>
-            <h1 class="text-lg font-bold text-[#2b3437] tracking-tight font-headline">Telda Labuan Bajo</h1>
-            <p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-medium mt-1">Sistem Manajemen</p>
+            <h1 class="text-base font-extrabold text-white tracking-tight font-headline">Telda Labuan Bajo</h1>
+            <p class="text-[10px] uppercase tracking-widest text-white/80 font-bold mt-1">Sistem Manajemen</p>
         </div>
-        <button id="closeSidebarBtn" class="md:hidden text-on-surface-variant hover:text-error transition-colors">
-            <span class="material-symbols-outlined">close</span>
+        <button id="closeSidebarBtn" class="md:hidden text-white/80 hover:text-white transition-colors">
+            <span class="material-symbols-outlined text-xl">close</span>
         </button>
     </div>
-    <nav class="flex-1 px-4 space-y-1">
-        <a class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('dashboard') ? 'border-l-4 border-[#185eb0] text-[#185eb0] font-semibold bg-[#d6e3ff]' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-[#dbe4e7]' }}" href="{{ route('dashboard') }}">
-            <span class="material-symbols-outlined">dashboard</span><span class="text-sm">Dashboard</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('indibiz.*') ? 'border-l-4 border-[#185eb0] text-[#185eb0] font-semibold bg-[#d6e3ff]' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-[#dbe4e7]' }}" href="{{ route('indibiz.index') }}">
-            <span class="material-symbols-outlined">database</span><span class="text-sm">Data Indibiz</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('survey.*') ? 'border-l-4 border-[#185eb0] text-[#185eb0] font-semibold bg-[#d6e3ff]' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-[#dbe4e7]' }}" href="{{ route('survey.index') }}">
-            <span class="material-symbols-outlined">fact_check</span><span class="text-sm">Data Survei</span>
-        </a>
+    
+    <nav class="flex-1 px-4 space-y-6">
+        <div>
+            <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Menu Utama</p>
+            <div class="space-y-1">
+                @php
+                    $isDash = request()->routeIs('dashboard');
+                @endphp
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ $isDash ? 'bg-primary/10 text-primary font-bold border-l-4 border-primary shadow-sm' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-slate-100 hover:translate-x-1' }}" href="{{ route('dashboard') }}">
+                    <span class="material-symbols-outlined {{ $isDash ? 'fill-icon' : '' }} group-hover:scale-110 transition-transform">dashboard</span>
+                    <span class="text-sm">Dashboard</span>
+                </a>
+
+                @php
+                    $isIndibiz = request()->routeIs('indibiz.*');
+                @endphp
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ $isIndibiz ? 'bg-primary/10 text-primary font-bold border-l-4 border-primary shadow-sm' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-slate-100 hover:translate-x-1' }}" href="{{ route('indibiz.index') }}">
+                    <span class="material-symbols-outlined {{ $isIndibiz ? 'fill-icon' : '' }} group-hover:scale-110 transition-transform">database</span>
+                    <span class="text-sm">Data Indibiz</span>
+                </a>
+
+                @php
+                    $isSurvey = request()->routeIs('survey.*');
+                @endphp
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ $isSurvey ? 'bg-primary/10 text-primary font-bold border-l-4 border-primary shadow-sm' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-slate-100 hover:translate-x-1' }}" href="{{ route('survey.index') }}">
+                    <span class="material-symbols-outlined {{ $isSurvey ? 'fill-icon' : '' }} group-hover:scale-110 transition-transform">fact_check</span>
+                    <span class="text-sm">Data Survei</span>
+                </a>
+            </div>
+        </div>
+
         @if (auth()->user()->role === 'admin')
-            <a class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('pengguna.*') ? 'border-l-4 border-[#185eb0] text-[#185eb0] font-semibold bg-[#d6e3ff]' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-[#dbe4e7]' }}" href="{{ route('pengguna.index') }}">
-                <span class="material-symbols-outlined">group</span><span class="text-sm">Kelola User</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('aktivitas.*') ? 'border-l-4 border-[#185eb0] text-[#185eb0] font-semibold bg-[#d6e3ff]' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-[#dbe4e7]' }}" href="{{ route('aktivitas.index') }}">
-                <span class="material-symbols-outlined">history</span><span class="text-sm">Aktivitas</span>
-            </a>
+            <div>
+                <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Admin</p>
+                <div class="space-y-1">
+                    @php
+                        $isUser = request()->routeIs('pengguna.*');
+                    @endphp
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ $isUser ? 'bg-primary/10 text-primary font-bold border-l-4 border-primary shadow-sm' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-slate-100 hover:translate-x-1' }}" href="{{ route('pengguna.index') }}">
+                        <span class="material-symbols-outlined {{ $isUser ? 'fill-icon' : '' }} group-hover:scale-110 transition-transform">group</span>
+                        <span class="text-sm">Kelola User</span>
+                    </a>
+
+                    @php
+                        $isAct = request()->routeIs('aktivitas.*');
+                    @endphp
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {{ $isAct ? 'bg-primary/10 text-primary font-bold border-l-4 border-primary shadow-sm' : 'text-[#49636f] hover:text-[#185eb0] hover:bg-slate-100 hover:translate-x-1' }}" href="{{ route('aktivitas.index') }}">
+                        <span class="material-symbols-outlined {{ $isAct ? 'fill-icon' : '' }} group-hover:scale-110 transition-transform">history</span>
+                        <span class="text-sm">Aktivitas</span>
+                    </a>
+                </div>
+            </div>
         @endif
     </nav>
-    <div class="px-4 py-6 mt-auto bg-[#eaeff1] space-y-1">
-        <a class="flex items-center gap-3 px-4 py-2 text-[#49636f] hover:text-[#185eb0] text-sm" href="{{ route('profile.edit') }}">
-            <span class="material-symbols-outlined text-lg">person</span><span>Profil Saya</span>
+
+    <div class="px-4 py-6 mt-auto bg-slate-50 border-t border-slate-100 space-y-1">
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#49636f] hover:text-[#185eb0] hover:bg-slate-100 text-sm transition-all group" href="{{ route('profile.edit') }}">
+            <span class="material-symbols-outlined group-hover:scale-110 transition-transform">person</span><span>Profil Saya</span>
         </a>
-        <form method="POST" action="{{ route('logout') }}" class="px-4 py-2" data-swal-confirm data-swal-title="Konfirmasi Logout" data-swal-text="Apakah Anda yakin ingin keluar dari sistem?" data-swal-confirm-btn="Ya, Keluar" data-swal-icon="question">
+        <form method="POST" action="{{ route('logout') }}" class="px-0 py-0" data-swal-confirm data-swal-title="Konfirmasi Logout" data-swal-text="Apakah Anda yakin ingin keluar dari sistem?" data-swal-confirm-btn="Ya, Keluar" data-swal-icon="question">
             @csrf
-            <button type="submit" class="flex items-center gap-3 text-[#49636f] hover:text-error text-sm w-full text-left">
-                <span class="material-symbols-outlined text-lg">logout</span><span>Keluar</span>
+            <button type="submit" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#49636f] hover:text-error hover:bg-error/5 text-sm w-full text-left transition-all group">
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">logout</span><span>Keluar</span>
             </button>
         </form>
     </div>
+</aside>
 </aside>
 
 <header class="flex justify-between items-center w-full px-4 md:px-8 py-4 md:ml-64 md:max-w-[calc(100%-16rem)] bg-white/80 backdrop-blur-md sticky top-0 border-b border-[#f1f4f6] z-20 shadow-sm">

@@ -17,16 +17,60 @@
                 @endcan
             </p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-2">
             <a href="{{ route('survey.trash') }}" class="flex items-center gap-2 px-5 py-2 bg-surface-container-high rounded-xl text-sm font-bold text-on-surface border border-outline-variant/30 hover:bg-error-container/20 hover:text-error transition-all">
                 <span class="material-symbols-outlined text-sm">delete_history</span>
                 Data Dihapus
+            </a>
+
+            <a href="{{ route('survey.print', request()->query()) }}" target="_blank" class="flex items-center gap-2 px-5 py-2 bg-secondary text-on-secondary rounded-xl text-sm font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <span class="material-symbols-outlined text-sm">print</span>
+                Cetak Laporan
             </a>
 
             <a href="{{ route('survey.create') }}" class="flex items-center gap-2 px-5 py-2 bg-primary rounded-xl text-sm font-bold text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <span class="material-symbols-outlined text-sm">add_task</span>
                 Input Survey Baru
             </a>
+        </div>
+    </div>
+    {{-- Overview Cards --}}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <!-- Total Survey -->
+        <div class="p-5 bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-primary/5 rounded-full group-hover:scale-125 transition-transform"></div>
+            <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Total Survey</p>
+            <h3 class="text-2xl font-extrabold mt-1 text-on-surface font-headline">{{ number_format($totalSurvey) }}</h3>
+            <div class="mt-2 text-[10px] text-primary font-bold flex items-center gap-1 uppercase tracking-wider">
+                <span class="material-symbols-outlined text-xs fill-icon">poll</span> Semua Responden
+            </div>
+        </div>
+        <!-- Berminat -->
+        <div class="p-5 bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-success/5 rounded-full group-hover:scale-125 transition-transform"></div>
+            <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Berminat</p>
+            <h3 class="text-2xl font-extrabold mt-1 text-primary font-headline">{{ number_format($berminatCount) }}</h3>
+            <div class="mt-2 text-[10px] text-primary font-bold flex items-center gap-1 uppercase tracking-wider">
+                <span class="material-symbols-outlined text-xs fill-icon">check_circle</span> Tertarik Layanan
+            </div>
+        </div>
+        <!-- Pikir-pikir -->
+        <div class="p-5 bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-warning/5 rounded-full group-hover:scale-125 transition-transform"></div>
+            <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Pikir-pikir</p>
+            <h3 class="text-2xl font-extrabold mt-1 text-secondary font-headline">{{ number_format($pikirCount) }}</h3>
+            <div class="mt-2 text-[10px] text-secondary font-bold flex items-center gap-1 uppercase tracking-wider">
+                <span class="material-symbols-outlined text-xs fill-icon">pending</span> Butuh Follow Up
+            </div>
+        </div>
+        <!-- Tidak Berminat -->
+        <div class="p-5 bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-error/5 rounded-full group-hover:scale-125 transition-transform"></div>
+            <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Tidak Berminat</p>
+            <h3 class="text-2xl font-extrabold mt-1 text-error font-headline">{{ number_format($tidakBerminatCount) }}</h3>
+            <div class="mt-2 text-[10px] text-error font-bold flex items-center gap-1 uppercase tracking-wider">
+                <span class="material-symbols-outlined text-xs fill-icon">cancel</span> Menolak Layanan
+            </div>
         </div>
     </div>
 
@@ -59,8 +103,19 @@
                 <option value="tidak berminat" {{ request('tipe') == 'tidak berminat' ? 'selected' : '' }}>Tidak Berminat</option>
             </select>
         </div>
+        
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline">format_list_bulleted</span>
+            <select name="limit" onchange="this.form.submit()" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-28">
+                <option value="5" {{ request('limit') == 5 ? 'selected' : '' }}>5 Data</option>
+                <option value="10" {{ request('limit') == 10 || !request('limit') ? 'selected' : '' }}>10 Data</option>
+                <option value="20" {{ request('limit') == 20 ? 'selected' : '' }}>20 Data</option>
+                <option value="25" {{ request('limit') == 25 ? 'selected' : '' }}>25 Data</option>
+            </select>
+        </div>
+
         <button type="submit" class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-sm font-bold shadow-sm hover:bg-secondary-dim transition-colors">Filter</button>
-        @if(request('bulan') || request('tahun') || request('tipe'))
+        @if(request('bulan') || request('tahun') || request('tipe') || request('limit'))
             <a href="{{ route('survey.index') }}" class="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-surface-variant transition-colors">Reset</a>
         @endif
     </form>
@@ -99,9 +154,22 @@
                             </td>
 
                             <td class="px-6 py-4">
-                                <span class="px-2 py-0.5 bg-surface-container-high text-on-surface rounded text-[10px] font-medium border border-outline-variant/30">
-                                    {{ $item->kriteria }}
-                                </span>
+                                <div class="flex flex-col gap-1">
+                                    <span class="inline-block px-2 py-0.5 w-max bg-surface-container-high text-on-surface rounded text-[10px] font-bold border border-outline-variant/30 uppercase tracking-tighter">
+                                        {{ $item->kriteria }}
+                                    </span>
+                                    @if($item->kecamatan)
+                                        <div class="text-[11px] font-bold text-primary flex items-center gap-0.5">
+                                            <span class="material-symbols-outlined text-[12px] fill-icon">location_on</span>
+                                            {{ $item->kecamatan }}
+                                        </div>
+                                    @endif
+                                    @if($item->alamat_detail)
+                                        <div class="text-[10px] text-on-surface-variant line-clamp-1 max-w-[200px]" title="{{ $item->alamat_detail }}">
+                                            {{ $item->alamat_detail }}
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
 
                             <td class="px-6 py-4">
@@ -125,10 +193,10 @@
 
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <form method="POST" action="{{ route('survey.destroy', $item) }}" data-swal-confirm data-swal-title="Hapus Survey" data-swal-text="Pindahkan data ke tempat sampah?" data-swal-confirm-btn="Ya, hapus" data-swal-icon="warning">
+                                    <form method="POST" action="{{ route('survey.destroy', $item->id_survey) }}" data-swal-confirm data-swal-title="Hapus Survey" data-swal-text="Pindahkan data ke tempat sampah?" data-swal-confirm-btn="Ya, hapus" data-swal-icon="warning">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="p-2 text-error hover:bg-error/10 rounded-lg transition-all" title="Hapus (Pindah ke Trash)">
+                                        <button type="submit" class="p-2 text-error hover:bg-error/10 rounded-lg transition-all" title="Hapus (Pindah ke Trash)">
                                             <span class="material-symbols-outlined text-lg">delete_sweep</span>
                                         </button>
                                     </form>

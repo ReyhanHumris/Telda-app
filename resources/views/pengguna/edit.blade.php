@@ -19,10 +19,28 @@
 
             <div class="p-8 space-y-6">
                 <div class="flex items-center gap-6 mb-6">
-                    @include('partials.avatar', ['user' => $pengguna, 'size' => 'lg', 'class' => 'shadow-sm'])
+                    <div class="relative group">
+                        @if ($pengguna->foto)
+                            <img id="avatar-preview" src="{{ $pengguna->foto_url }}" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-surface-container shadow-md">
+                        @else
+                            <div id="avatar-placeholder" class="w-24 h-24 rounded-full bg-primary-container text-primary flex items-center justify-center text-3xl font-bold border-4 border-surface-container shadow-md">
+                                {{ $pengguna->inisial() }}
+                            </div>
+                            <img id="avatar-preview" src="" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-surface-container shadow-md hidden">
+                        @endif
+                        <label for="foto" class="absolute inset-0 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                            <span class="material-symbols-outlined">photo_camera</span>
+                            <span class="text-[10px] font-bold uppercase mt-1">Ubah Foto</span>
+                        </label>
+                        <input type="file" id="foto" name="foto" class="hidden" accept="image/*" onchange="previewImage(this)">
+                    </div>
                     <div>
-                        <h3 class="text-lg font-bold">{{ $pengguna->nama_lengkap }}</h3>
-                        <p class="text-sm text-on-surface-variant">{{ $pengguna->role }}</p>
+                        <h3 class="text-lg font-bold text-on-surface">{{ $pengguna->nama_lengkap }}</h3>
+                        <p class="text-sm text-on-surface-variant mb-2">{{ $pengguna->role }}</p>
+                        <label for="foto" class="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-container-high hover:bg-surface-container text-on-surface text-xs font-bold rounded-lg cursor-pointer transition-all border border-outline-variant/30">
+                            <span class="material-symbols-outlined text-sm">upload</span>
+                            Pilih Foto Profil
+                        </label>
                     </div>
                 </div>
 
@@ -60,10 +78,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ubah Foto Profil</label>
-                    <input type="file" name="foto" accept="image/*" class="w-full bg-surface-container-high border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 p-3 text-sm rounded-t-lg">
-                </div>
+
             </div>
 
             <div class="p-6 bg-surface-container-low border-t border-outline-variant/10 flex gap-4 justify-end">
@@ -75,3 +90,36 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('avatar-preview');
+                const placeholder = document.getElementById('avatar-placeholder');
+                
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'Pratinjau foto diperbarui.',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+            });
+        }
+    }
+</script>
+@endpush

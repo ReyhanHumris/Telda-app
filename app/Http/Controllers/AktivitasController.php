@@ -8,12 +8,15 @@ use Illuminate\Support\Facades\Gate;
 
 class AktivitasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $limit = in_array($request->get('limit'), [5, 10, 20, 25]) ? (int) $request->get('limit') : 10;
+
         return view('aktivitas.index', [
             'items' => Aktivitas::with('pengguna')
                 ->orderByDesc('id_aktivitas')
-                ->paginate(10),
+                ->paginate($limit)
+                ->withQueryString(),
         ]);
     }
 
@@ -83,6 +86,15 @@ class AktivitasController extends Controller
         $aktivitas->forceDelete();
 
         return redirect()->route('aktivitas.trash')->with('status', 'Aktivitas dihapus permanen.');
+    }
+
+    public function print(Request $request)
+    {
+        $items = Aktivitas::with('pengguna')
+            ->orderByDesc('id_aktivitas')
+            ->get();
+
+        return view('aktivitas.print', compact('items'));
     }
 }
 

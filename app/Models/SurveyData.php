@@ -21,6 +21,10 @@ class SurveyData extends Model
         'hasil_survey',
         'id_pengguna',
         'tanggal_input',
+        'latitude',
+        'longitude',
+        'kecamatan',
+        'alamat_detail',
     ];
 
     protected $casts = [

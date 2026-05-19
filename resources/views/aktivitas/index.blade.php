@@ -11,16 +11,35 @@
             <h2 class="text-3xl font-extrabold text-on-surface tracking-tight font-headline">Aktivitas Sistem</h2>
             <p class="text-on-surface-variant mt-1 font-body">Pantau riwayat perubahan dan aktivitas operasional secara real-time.</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-2">
             <a href="{{ route('aktivitas.trash') }}" class="flex items-center gap-2 px-5 py-2 bg-surface-container-high rounded-xl text-sm font-bold text-on-surface border border-outline-variant/30 hover:bg-error-container/20 hover:text-error transition-all">
                 <span class="material-symbols-outlined text-sm">delete_history</span>
                 Log Dihapus
+            </a>
+            <a href="{{ route('aktivitas.print') }}" target="_blank" class="flex items-center gap-2 px-5 py-2 bg-secondary text-on-secondary rounded-xl text-sm font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <span class="material-symbols-outlined text-sm">print</span>
+                Cetak Laporan
             </a>
             <a href="{{ route('aktivitas.create') }}" class="flex items-center gap-2 px-5 py-2 bg-primary rounded-xl text-sm font-bold text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <span class="material-symbols-outlined text-sm">add</span>
                 Input Aktivitas
             </a>
         </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-4">
+        <div class="text-xs text-on-surface-variant font-medium">
+            Menampilkan data log aktivitas sistem terbaru.
+        </div>
+        <form method="GET" action="{{ route('aktivitas.index') }}" class="flex items-center gap-2">
+            <span class="text-xs text-on-surface-variant font-bold">Tampilkan:</span>
+            <select name="limit" onchange="this.form.submit()" class="border-outline-variant/30 rounded-lg text-xs focus:ring-primary focus:border-primary py-1 px-2.5 bg-surface-container-lowest w-24">
+                <option value="5" {{ request('limit') == 5 ? 'selected' : '' }}>5</option>
+                <option value="10" {{ request('limit') == 10 || !request('limit') ? 'selected' : '' }}>10</option>
+                <option value="20" {{ request('limit') == 20 ? 'selected' : '' }}>20</option>
+                <option value="25" {{ request('limit') == 25 ? 'selected' : '' }}>25</option>
+            </select>
+        </form>
     </div>
 
     <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
