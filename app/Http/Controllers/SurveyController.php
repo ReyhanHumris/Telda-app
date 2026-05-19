@@ -18,8 +18,20 @@ class SurveyController extends Controller
             $query->where('id_pengguna', $request->user()->id_pengguna);
         }
 
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_input', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_input', $request->tahun);
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('hasil_survey', $request->tipe);
+        }
+
         return view('survey.index', [
-            'items' => $query->get(),
+            'items' => $query->paginate(10)->withQueryString(),
         ]);
     }
 
@@ -76,5 +88,58 @@ class SurveyController extends Controller
         $survey->delete();
 
         return redirect()->route('survey.index')->with('status', 'Data survey berhasil dihapus.');
+    }
+
+    public function trash(Request $request)
+    {
+        $query = SurveyData::onlyTrashed()->with('pengguna')->orderByDesc('id_survey');
+
+        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
+            $query->where('id_pengguna', $request->user()->id_pengguna);
+        }
+
+        return view('survey.trash', [
+            'items' => $query->paginate(10),
+        ]);
+    }
+
+    public function restore(Request $request, $id)
+    {
+        $survey = SurveyData::onlyTrashed()->findOrFail($id);
+        
+        if (!Gate::allows('admin') && $survey->id_pengguna !== $request->user()->id_pengguna) {
+            abort(403);
+        }
+
+        $survey->restore();
+        
+        Aktivitas::create([
+            'nama_aktivitas' => 'Restore Survey',
+            'tanggal_aktivitas' => now(),
+            'keterangan' => 'Memulihkan data survey: ' . $survey->nama_responden,
+            'id_pengguna' => $request->user()->id_pengguna,
+        ]);
+
+        return redirect()->back()->with('status', 'Data survey berhasil dipulihkan.');
+    }
+
+    public function forceDelete(Request $request, $id)
+    {
+        $survey = SurveyData::onlyTrashed()->findOrFail($id);
+        
+        if (!Gate::allows('admin') && $survey->id_pengguna !== $request->user()->id_pengguna) {
+            abort(403);
+        }
+
+        Aktivitas::create([
+            'nama_aktivitas' => 'Hapus Permanen Survey',
+            'tanggal_aktivitas' => now(),
+            'keterangan' => 'Menghapus permanen data survey: ' . $survey->nama_responden,
+            'id_pengguna' => $request->user()->id_pengguna,
+        ]);
+
+        $survey->forceDelete();
+
+        return redirect()->back()->with('status', 'Data survey dihapus permanen.');
     }
 }

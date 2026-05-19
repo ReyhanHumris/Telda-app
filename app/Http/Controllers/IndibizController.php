@@ -18,9 +18,21 @@ class IndibizController extends Controller
             $query->where('id_pengguna', $request->user()->id_pengguna);
         }
 
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_input', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_input', $request->tahun);
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('jenis_layanan', $request->tipe);
+        }
+
         // Gunakan paginate() untuk menggantikan get() agar navigasi halaman berfungsi
         return view('indibiz.index', [
-            'items' => $query->paginate(10), 
+            'items' => $query->paginate(10)->withQueryString(), 
         ]);
     }
 
@@ -75,5 +87,58 @@ class IndibizController extends Controller
         $indibiz->delete();
 
         return redirect()->route('indibiz.index')->with('status', 'Data Indibiz berhasil dihapus.');
+    }
+
+    public function trash(Request $request)
+    {
+        $query = IndibizData::onlyTrashed()->with('pengguna')->orderByDesc('id_indibiz');
+
+        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
+            $query->where('id_pengguna', $request->user()->id_pengguna);
+        }
+
+        return view('indibiz.trash', [
+            'items' => $query->paginate(10),
+        ]);
+    }
+
+    public function restore(Request $request, $id)
+    {
+        $indibiz = IndibizData::onlyTrashed()->findOrFail($id);
+        
+        if (!Gate::allows('admin') && $indibiz->id_pengguna !== $request->user()->id_pengguna) {
+            abort(403);
+        }
+
+        $indibiz->restore();
+        
+        Aktivitas::create([
+            'nama_aktivitas' => 'Restore Indibiz',
+            'tanggal_aktivitas' => now(),
+            'keterangan' => 'Memulihkan data Indibiz: ' . $indibiz->nama_perusahaan,
+            'id_pengguna' => $request->user()->id_pengguna,
+        ]);
+
+        return redirect()->back()->with('status', 'Data Indibiz berhasil dipulihkan.');
+    }
+
+    public function forceDelete(Request $request, $id)
+    {
+        $indibiz = IndibizData::onlyTrashed()->findOrFail($id);
+        
+        if (!Gate::allows('admin') && $indibiz->id_pengguna !== $request->user()->id_pengguna) {
+            abort(403);
+        }
+
+        Aktivitas::create([
+            'nama_aktivitas' => 'Hapus Permanen Indibiz',
+            'tanggal_aktivitas' => now(),
+            'keterangan' => 'Menghapus permanen data Indibiz: ' . $indibiz->nama_perusahaan,
+            'id_pengguna' => $request->user()->id_pengguna,
+        ]);
+
+        $indibiz->forceDelete();
+
+        return redirect()->back()->with('status', 'Data Indibiz dihapus permanen.');
     }
 }

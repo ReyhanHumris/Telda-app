@@ -12,6 +12,10 @@
             <p class="text-on-surface-variant mt-1 font-body">Pantau riwayat perubahan dan aktivitas operasional secara real-time.</p>
         </div>
         <div class="flex gap-3">
+            <a href="{{ route('aktivitas.trash') }}" class="flex items-center gap-2 px-5 py-2 bg-surface-container-high rounded-xl text-sm font-bold text-on-surface border border-outline-variant/30 hover:bg-error-container/20 hover:text-error transition-all">
+                <span class="material-symbols-outlined text-sm">delete_history</span>
+                Log Dihapus
+            </a>
             <a href="{{ route('aktivitas.create') }}" class="flex items-center gap-2 px-5 py-2 bg-primary rounded-xl text-sm font-bold text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                 <span class="material-symbols-outlined text-sm">add</span>
                 Input Aktivitas
@@ -38,16 +42,19 @@
                                 <div class="text-sm font-semibold text-on-surface">
                                     {{ optional($item->tanggal_aktivitas)->format('d M Y') ?? '-' }}
                                 </div>
-                                <div class="text-[11px] text-on-surface-variant">
+                                <div class="text-[11px] text-on-surface-variant flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[10px]">schedule</span>
+                                    {{-- Format Jam WITA --}}
                                     {{ optional($item->tanggal_aktivitas)->format('H:i') ?? '00:00' }} WITA
                                 </div>
                             </td>
 
                             <td class="px-6 py-5">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">
-                                        {{ strtoupper(substr($item->pengguna?->nama_lengkap ?? 'U', 0, 2)) }}
-                                    </div>
+                                    {{-- Integrasi Foto Profil --}}
+                                    @if($item->pengguna)
+                                        @include('partials.avatar', ['user' => $item->pengguna, 'size' => 'sm'])
+                                    @endif
                                     <div>
                                         <div class="text-sm font-bold text-on-surface">{{ $item->pengguna?->nama_lengkap ?? 'Unknown' }}</div>
                                         <div class="text-[10px] text-primary font-semibold uppercase tracking-tight">
@@ -71,7 +78,7 @@
 
                             <td class="px-6 py-5 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <form method="POST" action="{{ route('aktivitas.destroy', $item) }}" onsubmit="return confirm('Hapus aktivitas ini?')">
+                                    <form method="POST" action="{{ route('aktivitas.destroy', $item) }}" data-swal-confirm data-swal-title="Hapus Log" data-swal-text="Pindahkan log ke tempat sampah?" data-swal-confirm-btn="Ya, hapus" data-swal-icon="warning">
                                         @csrf
                                         @method('DELETE')
                                         <button class="p-2 text-error hover:bg-error/10 rounded-lg transition-colors" title="Hapus">

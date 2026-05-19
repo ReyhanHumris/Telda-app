@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pengguna extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, SoftDeletes;
 
     protected $table = 'pengguna';
     protected $primaryKey = 'id_pengguna';
@@ -26,6 +27,7 @@ class Pengguna extends Authenticatable
         'username',
         'password',
         'role',
+        'foto',
     ];
 
     protected $hidden = [
@@ -39,5 +41,17 @@ class Pengguna extends Authenticatable
             'dibuat_pada' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getFotoUrlAttribute(): ?string
+    {
+        return $this->foto
+            ? asset('storage/profile/' . $this->foto)
+            : null;
+    }
+
+    public function inisial(): string
+    {
+        return strtoupper(substr($this->nama_lengkap, 0, 2));
     }
 }

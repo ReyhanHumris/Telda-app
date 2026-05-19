@@ -8,62 +8,18 @@
                 <span class="material-symbols-outlined text-[10px]">chevron_right</span>
                 <span class="text-primary">Survey Indibiz</span>
             </nav>
-            <h2 class="text-3xl font-extrabold text-on-surface tracking-tight font-headline">Data Survey</h2>
-            <p class="text-on-surface-variant mt-1 font-body">
-                @can('admin')
-                    Manajemen seluruh data survey dari semua petugas di lapangan.
-                @else
-                    Daftar hasil survey yang telah Anda kumpulkan.
-                @endcan
-            </p>
+            <h2 class="text-3xl font-extrabold text-on-surface tracking-tight font-headline">Survey Dihapus</h2>
+            <p class="text-on-surface-variant mt-1 font-body">Daftar survey yang berada di tempat sampah.</p>
         </div>
         <div class="flex gap-3">
-            <a href="{{ route('survey.trash') }}" class="flex items-center gap-2 px-5 py-2 bg-surface-container-high rounded-xl text-sm font-bold text-on-surface border border-outline-variant/30 hover:bg-error-container/20 hover:text-error transition-all">
-                <span class="material-symbols-outlined text-sm">delete_history</span>
-                Data Dihapus
-            </a>
-
-            <a href="{{ route('survey.create') }}" class="flex items-center gap-2 px-5 py-2 bg-primary rounded-xl text-sm font-bold text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                <span class="material-symbols-outlined text-sm">add_task</span>
-                Input Survey Baru
+            <a href="{{ route('survey.index') }}" class="flex items-center gap-2 px-5 py-2 bg-surface-container-high rounded-xl text-sm font-bold text-on-surface border border-outline-variant/30 hover:bg-surface-variant transition-all">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Kembali ke Data Aktif
             </a>
         </div>
     </div>
 
-    <form method="GET" action="{{ route('survey.index') }}" class="flex flex-wrap items-center gap-3 mb-6 p-4 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-outline">calendar_month</span>
-            <select name="bulan" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-36">
-                <option value="">Bulan...</option>
-                @php
-                    $months = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
-                @endphp
-                @foreach($months as $key => $name)
-                    <option value="{{ $key }}" {{ request('bulan') == $key ? 'selected' : '' }}>{{ $name }}</option>
-                @endforeach
-            </select>
-            <select name="tahun" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-28">
-                <option value="">Tahun...</option>
-                @php $currentYear = date('Y'); @endphp
-                @foreach(range($currentYear, $currentYear - 5) as $y)
-                    <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-outline">category</span>
-            <select name="tipe" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-48">
-                <option value="">Semua Hasil Survey</option>
-                <option value="berminat" {{ request('tipe') == 'berminat' ? 'selected' : '' }}>Berminat</option>
-                <option value="pikir-pikir" {{ request('tipe') == 'pikir-pikir' ? 'selected' : '' }}>Pikir-pikir</option>
-                <option value="tidak berminat" {{ request('tipe') == 'tidak berminat' ? 'selected' : '' }}>Tidak Berminat</option>
-            </select>
-        </div>
-        <button type="submit" class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-sm font-bold shadow-sm hover:bg-secondary-dim transition-colors">Filter</button>
-        @if(request('bulan') || request('tahun') || request('tipe'))
-            <a href="{{ route('survey.index') }}" class="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-surface-variant transition-colors">Reset</a>
-        @endif
-    </form>
+
 
     <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
         <div class="overflow-x-auto">
@@ -125,11 +81,15 @@
 
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <form method="POST" action="{{ route('survey.destroy', $item) }}" data-swal-confirm data-swal-title="Hapus Survey" data-swal-text="Pindahkan data ke tempat sampah?" data-swal-confirm-btn="Ya, hapus" data-swal-icon="warning">
+                                    <form method="POST" action="{{ route('survey.restore', $item->id_survey) }}">
+                                        @csrf
+                                        <button type="submit" class="px-3 py-1 bg-primary text-on-primary rounded-lg text-xs font-bold hover:bg-primary-dim transition-all">Pulihkan</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('survey.forceDelete', $item->id_survey) }}" onsubmit="return confirm('Hapus permanen survey ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="p-2 text-error hover:bg-error/10 rounded-lg transition-all" title="Hapus (Pindah ke Trash)">
-                                            <span class="material-symbols-outlined text-lg">delete_sweep</span>
+                                        <button type="submit" class="p-1 text-error hover:bg-error/10 rounded-lg transition-all" title="Hapus Permanen">
+                                            <span class="material-symbols-outlined text-lg">delete_forever</span>
                                         </button>
                                     </form>
                                 </div>
@@ -139,9 +99,8 @@
                         <tr>
                             <td colspan="6" class="px-6 py-20 text-center">
                                 <div class="flex flex-col items-center opacity-25">
-                                    <span class="material-symbols-outlined text-6xl mb-3">query_stats</span>
-                                    <p class="text-base font-bold">Data Survey Kosong</p>
-                                    <p class="text-xs">Mulai kumpulkan data dari lapangan hari ini.</p>
+                                    <span class="material-symbols-outlined text-6xl mb-3">delete</span>
+                                    <p class="text-base font-bold">Trash Kosong</p>
                                 </div>
                             </td>
                         </tr>

@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -135,5 +136,20 @@
         </div>
     </main>
 
+    @if($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Gagal',
+                    text: '{{ addslashes($errors->first()) }}',
+                    confirmButtonColor: '#185eb0',
+                    customClass: {
+                        popup: 'font-body rounded-xl shadow-xl',
+                    }
+                });
+            });
+        </script>
+    @endif
 </body>
 </html>

@@ -21,6 +21,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useTailwind();
         Gate::define('admin', fn (Pengguna $user) => $user->role === Pengguna::ROLE_ADMIN);
+
+        \Illuminate\Support\Facades\View::composer('layouts.admin', function ($view) {
+            if (auth()->check()) {
+                $notifications = \App\Models\Aktivitas::with('pengguna')
+                    ->latest('tanggal_aktivitas')
+                    ->take(5)
+                    ->get();
+                $view->with('notifications', $notifications);
+            }
+        });
     }
 }

@@ -13,16 +13,46 @@
             </p>
         </div>
         <div class="flex items-center gap-3">
-            <button class="px-4 py-2 bg-surface-container-high text-on-secondary-container rounded-lg font-semibold text-sm hover:bg-surface-container-highest transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-lg">filter_list</span>
-                Filter
-            </button>
+            <a href="{{ route('indibiz.trash') }}" class="px-4 py-2 bg-surface-container-high text-on-surface rounded-lg font-bold text-sm border border-outline-variant/30 hover:bg-error-container/20 hover:text-error transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">delete_history</span>
+                Data Dihapus
+            </a>
             <a href="{{ route('indibiz.create') }}" class="px-5 py-2.5 bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-lg font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-lg">add</span>
                 Tambah Rekaman Baru
             </a>
         </div>
     </div>
+
+    <form method="GET" action="{{ route('indibiz.index') }}" class="flex flex-wrap items-center gap-3 mb-6 p-4 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline">calendar_month</span>
+            <select name="bulan" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-36">
+                <option value="">Bulan...</option>
+                @php
+                    $months = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
+                @endphp
+                @foreach($months as $key => $name)
+                    <option value="{{ $key }}" {{ request('bulan') == $key ? 'selected' : '' }}>{{ $name }}</option>
+                @endforeach
+            </select>
+            <select name="tahun" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-28">
+                <option value="">Tahun...</option>
+                @php $currentYear = date('Y'); @endphp
+                @foreach(range($currentYear, $currentYear - 5) as $y)
+                    <option value="{{ $y }}" {{ request('tahun') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline">category</span>
+            <input type="text" name="tipe" value="{{ request('tipe') }}" placeholder="Tipe Layanan..." class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-48">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-sm font-bold shadow-sm hover:bg-secondary-dim transition-colors">Filter</button>
+        @if(request('bulan') || request('tahun') || request('tipe'))
+            <a href="{{ route('indibiz.index') }}" class="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-surface-variant transition-colors">Reset</a>
+        @endif
+    </form>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="p-5 bg-surface-container-lowest rounded-xl shadow-sm border-b-2 border-primary/20">

@@ -6,6 +6,7 @@
     <title>{{ $title ?? 'Telda Labuan Bajo' }}</title>
     @yield('head')
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,6 +50,7 @@
                         <a class="px-3 py-2 rounded-full border border-slate-700 hover:bg-slate-800/60 {{ request()->routeIs('indibiz.*') ? 'bg-slate-800/70' : '' }}" href="{{ route('indibiz.index') }}">Indibiz</a>
                         <a class="px-3 py-2 rounded-full border border-slate-700 hover:bg-slate-800/60 {{ request()->routeIs('survey.*') ? 'bg-slate-800/70' : '' }}" href="{{ route('survey.index') }}">Survey</a>
                         @can('admin')
+                            <a class="px-3 py-2 rounded-full border border-slate-700 hover:bg-slate-800/60 {{ request()->routeIs('pengguna.*') ? 'bg-slate-800/70' : '' }}" href="{{ route('pengguna.index') }}">Kelola User</a>
                             <a class="px-3 py-2 rounded-full border border-slate-700 hover:bg-slate-800/60 {{ request()->routeIs('aktivitas.*') ? 'bg-slate-800/70' : '' }}" href="{{ route('aktivitas.index') }}">Aktivitas</a>
                         @endcan
                     </div>
@@ -75,6 +77,7 @@
             @yield('content')
         </main>
     </div>
+    @include('partials.sweetalert')
 </body>
 </html>
 

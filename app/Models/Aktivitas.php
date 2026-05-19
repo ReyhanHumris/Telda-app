@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Aktivitas extends Model
 {
+    use SoftDeletes;
     protected $table = 'aktivitas';
     protected $primaryKey = 'id_aktivitas';
     public $timestamps = false;
@@ -19,7 +21,7 @@ class Aktivitas extends Model
     ];
 
     protected $casts = [
-        'tanggal_aktivitas' => 'date',
+        'tanggal_aktivitas' => 'datetime',
     ];
 
     public function pengguna(): BelongsTo

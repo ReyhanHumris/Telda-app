@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SurveyData extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'survey_data';
     protected $primaryKey = 'id_survey';
     public $timestamps = false;

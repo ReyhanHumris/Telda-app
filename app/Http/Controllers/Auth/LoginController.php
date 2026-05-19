@@ -19,6 +19,7 @@ class LoginController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'role' => ['required', 'string'],
             'username' => ['required', 'string', 'max:50'],
             'password' => ['required', 'string'],
         ]);
@@ -32,7 +33,11 @@ class LoginController extends Controller
         }
 
         $ok = Auth::attempt(
-            ['username' => $request->string('username')->toString(), 'password' => $request->string('password')->toString()],
+            [
+                'role' => $request->string('role')->toString(),
+                'username' => $request->string('username')->toString(), 
+                'password' => $request->string('password')->toString()
+            ],
             $request->boolean('remember')
         );
 
@@ -40,7 +45,7 @@ class LoginController extends Controller
             RateLimiter::hit($throttleKey, 60);
 
             throw ValidationException::withMessages([
-                'username' => ['Username atau password salah.'],
+                'username' => ['Username, kata sandi, atau tingkat akses salah.'],
             ]);
         }
 
