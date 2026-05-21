@@ -15,11 +15,12 @@ class DashboardController extends Controller
         $user = $request->user();
         $isAdmin = $user->role === Pengguna::ROLE_ADMIN;
 
-        $indibizQuery = $isAdmin ? IndibizData::query() : IndibizData::where('id_pengguna', $user->id_pengguna);
+        // Agar data selalu sama (global) baik login sebagai Officer maupun Admin
+        $indibizQuery = IndibizData::query();
         $indibizTotal = (clone $indibizQuery)->count();
         $indibizAktif = (clone $indibizQuery)->where('status_langganan', 'aktif')->count();
 
-        $surveyQuery = $isAdmin ? SurveyData::query() : SurveyData::where('id_pengguna', $user->id_pengguna);
+        $surveyQuery = SurveyData::query();
         $surveyTotal = (clone $surveyQuery)->count();
         $surveyBreakdown = (clone $surveyQuery)
             ->selectRaw('hasil_survey, count(*) as count')
@@ -28,14 +29,40 @@ class DashboardController extends Controller
 
         $surveyTerbaru = (clone $surveyQuery)->latest('id_survey')->limit(4)->get();
 
-        $aktivitasTotal = $isAdmin
-            ? Aktivitas::count()
-            : Aktivitas::where('id_pengguna', $user->id_pengguna)->count();
+        // Aktivitas selalu global untuk pemantauan menyeluruh
+        $aktivitasTotal = Aktivitas::count();
 
         $aktivitasTerbaru = Aktivitas::with('pengguna')
             ->latest('id_aktivitas')
             ->limit(4)
             ->get();
+
+        // Sistem Leaderboard: dihitung secara global untuk memantau performansi seluruh officer
+        $leaderboard = Pengguna::withCount([
+            'surveys',
+            'surveys as surveys_berminat_count' => function ($query) {
+                $query->where('hasil_survey', 'berminat');
+            },
+            'indibizData as indibiz_aktif_count' => function ($query) {
+                $query->where('status_langganan', 'aktif');
+            }
+        ])->get()->map(function ($pengguna) {
+            $totalSurveys = $pengguna->surveys_count;
+            $totalIndibizAktif = $pengguna->indibiz_aktif_count;
+            $surveysBerminat = $pengguna->surveys_berminat_count;
+
+            $conversionRate = $totalSurveys > 0 ? round(($surveysBerminat / $totalSurveys) * 100, 1) : 0;
+            // Perhitungan Skor Kinerja: 10 Poin per Survey, 50 Poin per Indibiz Aktif
+            $performanceScore = ($totalSurveys * 10) + ($totalIndibizAktif * 50);
+
+            return [
+                'pengguna' => $pengguna,
+                'total_surveys' => $totalSurveys,
+                'total_indibiz_aktif' => $totalIndibizAktif,
+                'conversion_rate' => $conversionRate,
+                'score' => $performanceScore
+            ];
+        })->sortByDesc('score')->values();
 
         $targetBulan = 100;
         $achievementPercent = $targetBulan > 0 ? min(100, round(($surveyTotal / $targetBulan) * 100)) : 0;
@@ -140,6 +167,7 @@ class DashboardController extends Controller
             'chartWeekly' => $chartWeekly,
             'chartMonthly' => $chartMonthly,
             'mapLocations' => $mapLocations,
+            'leaderboard' => $leaderboard,
         ]);
     }
 }

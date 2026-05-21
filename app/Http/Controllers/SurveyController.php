@@ -14,32 +14,34 @@ class SurveyController extends Controller
     {
         $query = SurveyData::with('pengguna')->orderByDesc('id_survey');
 
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $query->where('id_pengguna', $request->user()->id_pengguna);
+        // Hitung Overview Stats secara global
+        $statsQuery = SurveyData::query();
+
+        // Terapkan filter Petugas jika diisi
+        if ($request->filled('petugas')) {
+            $query->where('id_pengguna', $request->petugas);
+            $statsQuery->where('id_pengguna', $request->petugas);
         }
 
-        // Hitung Overview Stats berdasarkan status (aktif/tidak di-trash)
-        $statsQuery = SurveyData::query();
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $statsQuery->where('id_pengguna', $request->user()->id_pengguna);
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_input', $request->bulan);
+            $statsQuery->whereMonth('tanggal_input', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_input', $request->tahun);
+            $statsQuery->whereYear('tanggal_input', $request->tahun);
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('hasil_survey', $request->tipe);
+            $statsQuery->where('hasil_survey', $request->tipe);
         }
 
         $totalSurvey = (clone $statsQuery)->count();
         $berminatCount = (clone $statsQuery)->where('hasil_survey', 'berminat')->count();
         $pikirCount = (clone $statsQuery)->where('hasil_survey', 'pikir-pikir')->count();
         $tidakBerminatCount = (clone $statsQuery)->where('hasil_survey', 'tidak berminat')->count();
-
-        if ($request->filled('bulan')) {
-            $query->whereMonth('tanggal_input', $request->bulan);
-        }
-
-        if ($request->filled('tahun')) {
-            $query->whereYear('tanggal_input', $request->tahun);
-        }
-
-        if ($request->filled('tipe')) {
-            $query->where('hasil_survey', $request->tipe);
-        }
 
         $limit = in_array($request->get('limit'), [5, 10, 20, 25]) ? (int) $request->get('limit') : 10;
 
@@ -49,6 +51,7 @@ class SurveyController extends Controller
             'berminatCount' => $berminatCount,
             'pikirCount' => $pikirCount,
             'tidakBerminatCount' => $tidakBerminatCount,
+            'usersList' => Pengguna::orderBy('nama_lengkap')->get(),
         ]);
     }
 
@@ -116,10 +119,6 @@ class SurveyController extends Controller
     {
         $query = SurveyData::onlyTrashed()->with('pengguna')->orderByDesc('id_survey');
 
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $query->where('id_pengguna', $request->user()->id_pengguna);
-        }
-
         return view('survey.trash', [
             'items' => $query->paginate(10),
         ]);
@@ -169,8 +168,8 @@ class SurveyController extends Controller
     {
         $query = SurveyData::with('pengguna')->orderByDesc('id_survey');
 
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $query->where('id_pengguna', $request->user()->id_pengguna);
+        if ($request->filled('petugas')) {
+            $query->where('id_pengguna', $request->petugas);
         }
 
         if ($request->filled('bulan')) {

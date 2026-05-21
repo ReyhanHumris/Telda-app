@@ -107,6 +107,106 @@
         </div>
     </div>
 
+    {{-- Leaderboard Row --}}
+    <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm mb-8 animate-fade-in">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+                <h4 class="text-lg font-bold font-headline flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-500 fill-icon">emoji_events</span>
+                    Klasemen Performa Officer (Leaderboard)
+                </h4>
+                <p class="text-xs text-on-surface-variant">Peringkat kontribusi berdasarkan akumulasi survei dan penutupan layanan aktif.</p>
+            </div>
+            <div class="text-[11px] font-bold text-on-surface-variant bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/10 self-start sm:self-center">
+                ⭐ Skor = (Survei × 10) + (Indibiz Aktif × 50)
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-outline-variant/10 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                        <th class="py-3 px-4 w-20 text-center">Peringkat</th>
+                        <th class="py-3 px-4">Nama Officer</th>
+                        <th class="py-3 px-4 text-center">Total Survei</th>
+                        <th class="py-3 px-4 text-center">Indibiz Aktif</th>
+                        <th class="py-3 px-4 text-center">Rasio Konversi</th>
+                        <th class="py-3 px-4 text-right">Skor Performa</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/5 text-sm">
+                    @forelse($leaderboard as $index => $item)
+                        @php
+                            $rowClass = '';
+                            $badge = '';
+                            $rank = $index + 1;
+                            
+                            if ($rank === 1) {
+                                $rowClass = 'bg-amber-500/5 font-semibold';
+                                $badge = '🥇';
+                            } elseif ($rank === 2) {
+                                $rowClass = 'bg-slate-400/5';
+                                $badge = '🥈';
+                            } elseif ($rank === 3) {
+                                $rowClass = 'bg-amber-700/5';
+                                $badge = '🥉';
+                            }
+                            
+                            // Sorot pengguna saat ini yang sedang login
+                            if ($item['pengguna']->id_pengguna === auth()->user()->id_pengguna) {
+                                $rowClass .= ' ring-2 ring-primary/20 bg-primary/5';
+                            }
+                        @endphp
+                        <tr class="hover:bg-surface-container-low transition-colors {{ $rowClass }}">
+                            <td class="py-3.5 px-4 text-center font-extrabold text-base">
+                                @if($badge)
+                                    <span class="text-xl inline-block drop-shadow-sm">{{ $badge }}</span>
+                                @else
+                                    <span class="text-on-surface-variant text-sm">{{ $rank }}</span>
+                                @endif
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex items-center gap-3">
+                                    @if ($item['pengguna']->foto)
+                                        <img src="{{ $item['pengguna']->foto_url }}" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant/20">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full bg-primary-container text-primary font-bold flex items-center justify-center text-xs">
+                                            {{ $item['pengguna']->inisial() }}
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-bold text-on-surface">{{ $item['pengguna']->nama_lengkap }}</span>
+                                            @if($item['pengguna']->id_pengguna === auth()->user()->id_pengguna)
+                                                <span class="text-[9px] bg-primary text-on-primary px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Anda</span>
+                                            @endif
+                                        </div>
+                                        <span class="text-xs text-on-surface-variant uppercase tracking-wider">{{ $item['pengguna']->role }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 text-center font-semibold tabular-nums">{{ $item['total_surveys'] }}</td>
+                            <td class="py-3.5 px-4 text-center font-semibold tabular-nums text-emerald-600">{{ $item['total_indibiz_aktif'] }}</td>
+                            <td class="py-3.5 px-4 text-center">
+                                <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-primary-container text-primary">
+                                    {{ $item['conversion_rate'] }}%
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 text-right">
+                                <span class="font-extrabold text-base text-primary tabular-nums">{{ number_format($item['score']) }}</span>
+                                <span class="text-[10px] text-on-surface-variant"> pts</span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-on-surface-variant text-sm">Belum ada data kontribusi dari officer.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     {{-- Lists row --}}
     <div class="grid grid-cols-12 gap-6 mb-8">
         <div class="col-span-12 lg:col-span-6 bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 shadow-sm">

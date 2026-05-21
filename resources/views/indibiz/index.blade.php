@@ -83,6 +83,16 @@
             <span class="material-symbols-outlined text-outline">category</span>
             <input type="text" name="tipe" value="{{ request('tipe') }}" placeholder="Tipe Layanan..." class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-48">
         </div>
+
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline">group</span>
+            <select name="petugas" class="border-outline-variant/30 rounded-lg text-sm focus:ring-primary focus:border-primary w-48">
+                <option value="">Semua Petugas</option>
+                @foreach($usersList as $u)
+                    <option value="{{ $u->id_pengguna }}" {{ request('petugas') == $u->id_pengguna ? 'selected' : '' }}>{{ $u->nama_lengkap }}</option>
+                @endforeach
+            </select>
+        </div>
         
         <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-outline">format_list_bulleted</span>
@@ -95,7 +105,7 @@
         </div>
 
         <button type="submit" class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-sm font-bold shadow-sm hover:bg-secondary-dim transition-colors">Filter</button>
-        @if(request('bulan') || request('tahun') || request('tipe') || request('limit'))
+        @if(request('bulan') || request('tahun') || request('tipe') || request('petugas') || request('limit'))
             <a href="{{ route('indibiz.index') }}" class="px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-surface-variant transition-colors">Reset</a>
         @endif
     </form>

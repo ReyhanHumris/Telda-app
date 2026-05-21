@@ -54,4 +54,15 @@ class Pengguna extends Authenticatable
     {
         return strtoupper(substr($this->nama_lengkap, 0, 2));
     }
+
+    public function surveys()
+    {
+        return $this->hasMany(SurveyData::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    public function indibizData()
+    {
+        return $this->hasMany(IndibizData::class, 'id_pengguna', 'id_pengguna');
+    }
 }
+

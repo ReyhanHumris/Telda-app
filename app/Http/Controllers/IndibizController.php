@@ -14,31 +14,33 @@ class IndibizController extends Controller
     {
         $query = IndibizData::with('pengguna')->orderByDesc('id_indibiz');
 
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $query->where('id_pengguna', $request->user()->id_pengguna);
+        // Hitung Overview Stats secara global
+        $statsQuery = IndibizData::query();
+
+        // Terapkan filter Petugas jika diisi
+        if ($request->filled('petugas')) {
+            $query->where('id_pengguna', $request->petugas);
+            $statsQuery->where('id_pengguna', $request->petugas);
         }
 
-        // Hitung Overview Stats berdasarkan status langganan (aktif/nonaktif)
-        $statsQuery = IndibizData::query();
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $statsQuery->where('id_pengguna', $request->user()->id_pengguna);
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_input', $request->bulan);
+            $statsQuery->whereMonth('tanggal_input', $request->bulan);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_input', $request->tahun);
+            $statsQuery->whereYear('tanggal_input', $request->tahun);
+        }
+
+        if ($request->filled('tipe')) {
+            $query->where('jenis_layanan', $request->tipe);
+            $statsQuery->where('jenis_layanan', $request->tipe);
         }
 
         $totalIndibiz = (clone $statsQuery)->count();
         $aktifCount = (clone $statsQuery)->whereIn('status_langganan', ['aktif', 'Aktif'])->count();
         $nonaktifCount = (clone $statsQuery)->whereIn('status_langganan', ['nonaktif', 'Nonaktif'])->count();
-
-        if ($request->filled('bulan')) {
-            $query->whereMonth('tanggal_input', $request->bulan);
-        }
-
-        if ($request->filled('tahun')) {
-            $query->whereYear('tanggal_input', $request->tahun);
-        }
-
-        if ($request->filled('tipe')) {
-            $query->where('jenis_layanan', $request->tipe);
-        }
 
         $limit = in_array($request->get('limit'), [5, 10, 20, 25]) ? (int) $request->get('limit') : 10;
 
@@ -48,6 +50,7 @@ class IndibizController extends Controller
             'totalIndibiz' => $totalIndibiz,
             'aktifCount' => $aktifCount,
             'nonaktifCount' => $nonaktifCount,
+            'usersList' => Pengguna::orderBy('nama_lengkap')->get(),
         ]);
     }
 
@@ -110,10 +113,6 @@ class IndibizController extends Controller
     {
         $query = IndibizData::onlyTrashed()->with('pengguna')->orderByDesc('id_indibiz');
 
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $query->where('id_pengguna', $request->user()->id_pengguna);
-        }
-
         return view('indibiz.trash', [
             'items' => $query->paginate(10),
         ]);
@@ -163,8 +162,8 @@ class IndibizController extends Controller
     {
         $query = IndibizData::with('pengguna')->orderByDesc('id_indibiz');
 
-        if ($request->user()->role !== Pengguna::ROLE_ADMIN) {
-            $query->where('id_pengguna', $request->user()->id_pengguna);
+        if ($request->filled('petugas')) {
+            $query->where('id_pengguna', $request->petugas);
         }
 
         if ($request->filled('bulan')) {
