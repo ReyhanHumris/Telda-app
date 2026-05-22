@@ -364,7 +364,7 @@
                 chart: { type: 'donut', height: 220, fontFamily: 'Inter, sans-serif' },
                 labels: breakdownLabels,
                 series: breakdownValues,
-                colors: ['#185eb0', '#49636f', '#9f403d', '#5d5c78'],
+                colors: ['#00b731', '#bfb500', '#565656', '#5d5c78'],
                 legend: { position: 'bottom', fontSize: '11px' },
                 plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total' } } } } },
                 dataLabels: { enabled: false },

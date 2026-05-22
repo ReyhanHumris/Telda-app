@@ -93,20 +93,12 @@ class IndibizController extends Controller
         $allowed = Gate::allows('admin') || $indibiz->id_pengguna === $user->id_pengguna;
 
         if (! $allowed) {
-            abort(403);
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menghapus data ini. Silakan minta persetujuan admin.');
         }
-
-        // Logika Otomatis: Catat log saat data dihapus (Opsional)
-        Aktivitas::create([
-            'nama_aktivitas' => 'Menghapus data',
-            'tanggal_aktivitas' => now(),
-            'keterangan' => 'Menghapus data Indibiz: ' . $indibiz->nama_perusahaan,
-            'id_pengguna' => $user->id_pengguna,
-        ]);
 
         $indibiz->delete();
 
-        return redirect()->route('indibiz.index')->with('status', 'Data Indibiz berhasil dihapus.');
+        return redirect()->route('indibiz.index')->with('success', 'Data berhasil dihapus.');
     }
 
     public function trash(Request $request)

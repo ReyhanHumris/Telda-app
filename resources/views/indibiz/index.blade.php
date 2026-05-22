@@ -156,7 +156,7 @@
                                     <a href="#" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-lg">
                                         <span class="material-symbols-outlined text-lg">edit</span>
                                     </a>
-                                    <form method="POST" action="{{ route('indibiz.destroy', $item->id_indibiz) }}" data-swal-confirm data-swal-title="Hapus Indibiz" data-swal-text="Hapus data klien Indibiz ini?" data-swal-confirm-btn="Ya, hapus" data-swal-icon="warning">
+                                    <form method="POST" action="{{ route('indibiz.destroy', $item->id_indibiz) }}" data-swal-confirm data-swal-title="Hapus Indibiz" data-swal-text="Anda tidak memiliki izin untuk menghapus data ini. Silakan minta persetujuan admin." data-swal-confirm-btn="Ya, hapus" data-swal-icon="warning">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-lg" title="Hapus Data">

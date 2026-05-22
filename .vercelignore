@@ -1,0 +1,12 @@
+node_modules
+vendor
+.git
+.gitignore
+README.md
+.env.example
+tests
+storage/logs
+.DS_Store
+*.log
+.vscode
+.idea

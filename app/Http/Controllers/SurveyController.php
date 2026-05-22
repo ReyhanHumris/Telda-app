@@ -97,9 +97,8 @@ class SurveyController extends Controller
         
         // Cek izin hapus (Admin atau pemilik data)
         $allowed = Gate::allows('admin') || $survey->id_pengguna === $user->id_pengguna;
-
         if (! $allowed) {
-            abort(403);
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menghapus data ini. Silakan minta persetujuan admin.');
         }
 
         // Catat log sebelum data benar-benar dihapus agar nama_responden masih terbaca
