@@ -1,5 +1,5 @@
 {
-  "buildCommand": "composer install --prefer-dist --no-interaction && npm install && npm run build",
+  "buildCommand": "composer install --prefer-dist --no-interaction --node-env=production && npm install && npm run build",
   "env": {
     "APP_DEBUG": "false",
     "LOG_CHANNEL": "stderr",
@@ -9,17 +9,10 @@
   },
   "functions": {
     "api/index.php": {
-      "runtime": "php:8.3"
+      "runtime": "php@8.3"
     }
   },
   "routes": [
-    {
-      "src": "/storage/(.*)",
-      "dest": "/storage/$1",
-      "cache": {
-        "maxAge": 86400
-      }
-    },
     {
       "src": "/(.*)",
       "dest": "/api/index.php"
