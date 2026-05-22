@@ -1,16 +1,7 @@
 {
-  "framework": "laravel",
-  "php": {
-    "version": "8.3",
-    "memory": 256,
-    "execution": {
-      "max_duration": 30,
-      "max_concurrency": 100
-    }
-  },
   "buildCommand": "composer install --prefer-dist --no-interaction && npm install && npm run build",
   "env": {
-    "APP_DEBUG": false,
+    "APP_DEBUG": "false",
     "LOG_CHANNEL": "stderr",
     "SESSION_DRIVER": "database",
     "CACHE_DRIVER": "database",
